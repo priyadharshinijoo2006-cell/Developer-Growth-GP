@@ -1,32 +1,41 @@
 package com.developer.platform.login;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.developer.platform.entity.User;
 import com.developer.platform.service.UserService;
 
-@RestController
-@RequestMapping("/login")
-@CrossOrigin(origins = "*")
+@Controller
 public class LoginController {
 
     @Autowired
     private UserService userService;
 
-    @PostMapping
-    public String login(@RequestBody User loginUser) {
+    // Open Login Page
+    @GetMapping("/login")
+    public String showLoginPage() {
+        return "login";
+    }
 
-        User user = userService.getUserByEmail(loginUser.getEmail());
+    // Login Form Submit
+    @PostMapping("/login")
+    public String loginUser(@RequestParam String email,
+                            @RequestParam String password,
+                            Model model) {
 
-        if (user == null) {
-            return "Email not found";
-        }
+        User user = userService.loginUser(email, password);
 
-        if (user.getPassword().equals(loginUser.getPassword())) {
-            return "Login Success";
+        if (user != null) {
+            model.addAttribute("user", user);
+            return "dashboard";
         } else {
-            return "Invalid Password";
+            model.addAttribute("error", "Invalid Email or Password");
+            return "login";
         }
     }
 }
